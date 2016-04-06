@@ -26,7 +26,7 @@ public:
 		loadSubjectsQMUL();
 		deltaQMUL = 10;
 		loadQMUL(pathQMUL);
-		cout << "\t\tDone!" << endl;return;
+		cout << "\t\tDone!" << endl;
 
 		// Load Pose Dataset
 		cout << "\tLoading Pose Dataset" << endl;
@@ -60,14 +60,16 @@ public:
 			for (int j = 0; j < cols; j++)
 			{
 				QMUL[index][i][j].copyTo(image);
-				hconcat(temp, image, temp);
+				image = image.t();
+				temp.push_back(image);
 			}
 
-			vconcat(output, temp, output);
+			temp = temp.t();
+			output.push_back(temp);
 			temp = Mat();
 		}
 
-		int scale = 10;
+		int scale = 2;
 		string imgName = subject + "'s Face";
 		namedWindow(imgName, WINDOW_NORMAL);
 		resizeWindow(imgName, output.cols/scale, output.rows/scale);
@@ -99,15 +101,17 @@ public:
 			{
 				Pose[per][ser][i][j].copyTo(image);
 				Rect annotation = annotPose[per][ser][i][j];
-				rectangle(image, annotation, Scalar(255, 0, 255), 2);
-				hconcat(temp, image, temp);
+				rectangle(image, annotation, Scalar(255, 0, 255), 5);
+				image = image.t();
+				temp.push_back(image);
 			}
 
-			vconcat(output, temp, output);
+			temp = temp.t();
+			output.push_back(temp);
 			temp = Mat();
 		}
 
-		int scale = 10;
+		int scale = 5;
 		string imgName = "Person" + perID + "'s Face Series " + to_string(series);
 		namedWindow(imgName, WINDOW_NORMAL);
 		resizeWindow(imgName, output.cols/scale, output.rows/scale);
@@ -134,7 +138,7 @@ public:
 
 		for (int i = 0; i < rows; i++)
 		{
-			for (int j = 0; j < cols; i++)
+			for (int j = 0; j < cols; j++)
 			{
 				output[count] = QMUL[index][i][j];
 				count++;
@@ -177,13 +181,16 @@ public:
 		int numSer = (int) Pose[0].size();
 
 		int count = 0;
+		Mat image, roi;
 		output = vector<Mat>(numPers*numSer);
 
 		for (int per = 0; per < numPers; per++)
 		{
 			for (int ser = 0; ser < numSer; ser++)
 			{
-				output[count] = Pose[per][ser][indexTilt][indexPan];
+				image = Pose[per][ser][indexTilt][indexPan];
+				roi = image(annotPose[per][ser][indexTilt][indexPan]);
+				output[count] = roi;
 				count++;
 			}
 		}
@@ -204,6 +211,8 @@ public:
 		{
 			cout << subjectsQMUL[i] << endl;
 		}
+
+		cout << endl;
 	}
 
 	void printPoseQMUL()
@@ -239,6 +248,8 @@ public:
 		{
 			cout << "Person" << setfill('0') << setw(2) << i+1 << endl;
 		}
+
+		cout << endl;
 	}
 
 	void printSeriesPose()
@@ -248,8 +259,10 @@ public:
 		
 		for (int i = 0; i < size; i++)
 		{
-			cout << "Series" << i+1 << endl;
+			cout << "Series " << i+1 << endl;
 		}
+
+		cout << endl;
 	}
 
 	void printPosePose()
@@ -319,7 +332,6 @@ private:
 	void loadSubjectsQMUL()
 	{
 		subjectsQMUL.push_back("AdamB");
-		subjectsQMUL.push_back("AdamBTest");
 		subjectsQMUL.push_back("AndreeaV");
 		subjectsQMUL.push_back("CarlaB");
 		subjectsQMUL.push_back("ColinP");
@@ -327,12 +339,10 @@ private:
 		subjectsQMUL.push_back("DennisP");
 		subjectsQMUL.push_back("DennisPNoGlasses");
 		subjectsQMUL.push_back("DerekC");
-		subjectsQMUL.push_back("DerekCTest");
 		subjectsQMUL.push_back("GrahamW");
 		subjectsQMUL.push_back("HeatherL");
 		subjectsQMUL.push_back("Jack");
 		subjectsQMUL.push_back("JamieS");
-		subjectsQMUL.push_back("JamieSTest");
 		subjectsQMUL.push_back("JeffN");
 		subjectsQMUL.push_back("John");
 		subjectsQMUL.push_back("Jon");
@@ -342,9 +352,7 @@ private:
 		subjectsQMUL.push_back("KrystynaN");
 		subjectsQMUL.push_back("PaulV");
 		subjectsQMUL.push_back("RichardB");
-		subjectsQMUL.push_back("RichardBTest");
 		subjectsQMUL.push_back("RichardH");
-		subjectsQMUL.push_back("RichardHTest");
 		subjectsQMUL.push_back("SarahL");
 		subjectsQMUL.push_back("SeanG");
 		subjectsQMUL.push_back("SeanGNoGlasses");
@@ -362,8 +370,7 @@ private:
 		vector<vector<Mat>> tempTilt;
 
 		int perSize = (int) subjectsQMUL.size();
-		stringstream fileName;
-		string subject, filePath;
+		string subject, fileName, filePath;
 		unsigned pos;
 
 		for (int i = 0; i < perSize; i++)
@@ -379,10 +386,8 @@ private:
 			{
 				for (int pan = 0; pan <= 180; pan+=deltaQMUL)
 				{
-					fileName << subject << '_' << setfill('0') << setw(3) << tilt;
-					fileName << '_' << setfill('0') << setw(3) << pan;
-					fileName << ".ras"; 
-					filePath = pathQMUL + '/' + subject + "Grey/" + fileName.str();
+					fileName = subject + "_" + formatIntStr(tilt, 3) + "_" + formatIntStr(pan, 3) + ".ras"; 
+					filePath = pathQMUL + '/' + subject + "Grey/" + fileName;
 					image = imread(filePath);
 					if (!image.data)
 					{
@@ -413,46 +418,57 @@ private:
 		vector<vector<vector<Rect>>> annotSer;
 
 		int count;
-		char tiltPlus;
-		char panPlus;
-		string line;
-		stringstream fileName, filePath;
+		string tiltPlus, panPlus;
+		string line, fileName, filePath, imagePath, annotPath;
 		
 		int x;
 		int y;
 		int width;
 		int height;
 
-		for (int per = 0; per < numPersPose; per++)
+		for (int per = 1; per <= numPersPose; per++)
 		{
-			count = 0;
 
 			for (int ser = 1; ser <= 2; ser++)
 			{
-				tiltPlus = NULL;
+				count = 14;
+				tiltPlus = "";
 
-				for (int tilt = 60; tilt <= 120; tilt+=deltaQMUL)
+				for (int tilt = -30; tilt <= 30; tilt+=deltaPose)
 				{
 					if (tilt >= 0) tiltPlus = '+';
-					panPlus = NULL;
+					panPlus = "";
 
-					for (int pan = 0; pan <= 180; pan+=deltaQMUL)
+					for (int pan = -90; pan <= 90; pan+=deltaPose)
 					{
 						if (pan >= 0) panPlus = '+';
 
-						fileName << "person" << setfill('0') << setw(2) << per << ser << setfill('0') << setw(2) << count << tiltPlus << tilt << panPlus << pan;
-						filePath << pathPose + "/Person" << setfill('0') << setw(2) << per << '/' << fileName;
+						fileName = "person" + formatIntStr(per, 2) + to_string(ser) + formatIntStr(count, 2) + 
+							tiltPlus + to_string(tilt) + panPlus + to_string(pan);
+						filePath = pathPose + "/Person" + formatIntStr(per, 2) +'/' + fileName;
 
-						image = imread(filePath.str() + ".jpg");
+						imagePath = filePath + ".jpg";
+						image = imread(imagePath);
+						if (!image.data)
+						{
+							cout << "\t\tError loading image in " << imagePath << endl;
+							return;
+						}
 						tempPan.push_back(image);
 
-						ifstream annotIfs(filePath.str() + ".txt");
+						annotPath = filePath + ".txt";
+						ifstream annotIfs(annotPath);
+						if (!annotIfs.is_open())
+						{
+							cout << "\t\tError: Error loading annotation in " << annotPath << endl;
+							return;
+						}
 						getline(annotIfs, line);
 						getline(annotIfs, line);
 						getline(annotIfs, line);
 						annotIfs >> x;
-						annotIfs>> y;
-						annotIfs>> width;
+						annotIfs >> y;
+						annotIfs >> width;
 						annotIfs >> height;
 						annotRect = Rect(x - width/2, y - height/2, width, height);
 						annotPan.push_back(annotRect);
@@ -478,6 +494,12 @@ private:
 			annotSer.clear();
 		}
 	}
+	string formatIntStr(int i, int width)
+	{
+		stringstream output;
+		output << setfill('0') << setw(width) << i;
+		return output.str();
+	}
 	void printAngles(int max, int delta)
 	{
 		int x = -max;
@@ -485,170 +507,17 @@ private:
 
 		for (x+=delta; x <= max; x+=delta)
 		{
-			cout << ", " << x << endl;
+			cout << ", " << x;
 		}
 
-		cout << '}' << endl;
+		cout << '}' << endl << endl;
 	}
 };
 
-/*class K_Fold_Cross_Set
-{
-public:
-	K_Fold_Cross_Set::K_Fold_Cross_Set(int x)
-	{
-		if (x < 2) 
-		{
-			cout << "k-fold cross set must have at least 2 subsets" << endl;
-			return;
-		}
-
-		k = x;
-	}
-
-	void add(Mat m, string info)
-	{
-		bufferSet.push_back(m);
-		bufferInfo.push_back(info);
-	}
-
-	void addSet(vector<Mat> vM, vector<string> vInfo)
-	{
-		bufferSet.insert(bufferSet.end(), vM.begin(), vM.end());
-		bufferInfo.insert(bufferInfo.end(), vInfo.begin(), vInfo.end());
-	}
-
-	void clearAll()
-	{
-		clearBuffer();
-		clearSet();
-	}
-
-	void clearBuffer()
-	{
-		bufferSet.clear();
-		bufferInfo.clear();
-	}
-
-	void clearSet()
-	{
-		trainSet.clear();
-		trainInfo.clear();
-		testSet.clear();
-		testInfo.clear();
-	}
-
-	void create()
-	{
-		int size = (int) bufferSet.size();
-		if (size < k) {
-			cout << k << "-fold cross set must have at least " << k << " elements" << endl;
-			return;
-		}
-		if (size%k != 0)
-		{
-			cout << k << "-fold cross set must have elements divisble by " << k << endl;
-			cout << "Add " << k - (size%k) << " elements to the set" << endl;
-		}
-
-		clearSet();
-
-		int q = size / k;
-
-		randomShuffle();
-
-		Mat m;
-		string info;
-		int shuffledIndex, setIndex, index;	
-		
-		for (int i = 0; i < size; i++)
-		{
-			shuffledIndex = indices[i];
-			m = bufferSet[shuffledIndex];
-			info = bufferInfo[shuffledIndex];
-
-			setIndex = shuffledIndex/q;
-			index = shuffledIndex%q;
-
-			if (setIndex == k-1)
-			{
-				testSet[index] = m;
-				testInfo[index] = info;
-			}
-			else
-			{
-				trainSet[setIndex][index] = m;
-				trainInfo[setIndex][index] = info;
-			}
-		}
-
-		clearBuffer();
-		indices.clear();
-	}
-
-	void getAllSet(vector<vector<Mat>> &outputTrainSet, vector<vector<string>> &outputTrainInfo, vector<Mat> &outputTestSet, vector<string> &outputTestInfo)
-	{
-		getTrainSet(outputTrainSet, outputTrainInfo);
-		getTestSet(outputTestSet, outputTestInfo);
-	}
-
-	void getTrainSet(vector<vector<Mat>> &outputSet, vector<vector<string>> &outputInfo)
-	{
-		outputSet = trainSet;
-		outputInfo = trainInfo;
-	}
-
-	void getTestSet(vector<Mat> &outputSet, vector<string> &outputInfo)
-	{
-		outputSet = testSet;
-		outputInfo = testInfo;
-	}
-
-	void getTrainSetAt(int setIndex, vector<Mat> &outputSet, vector<string> &outputInfo)
-	{
-		outputSet = trainSet[setIndex];
-		outputInfo = trainInfo[setIndex];
-	}
-
-	void trainSetAt(int setIndex, int index, Mat &m, string &str)
-	{
-		m = trainSet[setIndex][index];
-		str = trainInfo[setIndex][index];
-	}
-
-	void testSetAt(int index, Mat &m, string &str)
-	{
-		m = testSet[index];
-		str = testInfo[index];
-	}
-	
-private:
-	int k;
-	vector<int> indices;
-
-	vector<Mat> bufferSet;
-	vector<string> bufferInfo;
-
-	vector<vector<Mat>> trainSet;
-	vector<vector<string>> trainInfo;
-	vector<Mat> testSet;
-	vector<String> testInfo;
-
-	void randomShuffle()
-	{
-		int size = (int) bufferSet.size();
-		for (int i = 0; i <= size; i++) indices.push_back(i);
-		random_shuffle(indices.begin(), indices.end());		
-	}
-
-};*/
-
 void main(void)
 {
-	string pathQMUL = "../QMUL_360degreeViewSphere_FaceDatabase/Set1_Greyscale";
+	string pathQMUL = "../QMUL";
 	string pathPose = "../HeadPoseImageDatabase";
 	Face_Set fset(pathQMUL, pathPose);
 
-	//string subject = "AdamBGrey";
-	//fset.dispImageSetQMUL(subject);
 }
