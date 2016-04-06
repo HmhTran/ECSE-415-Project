@@ -5,7 +5,6 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
-
 #include "K_Fold_Cross_Set.h"
 
 using namespace cv;
@@ -283,13 +282,13 @@ public:
 		printAngles(maxTilt, deltaPose);
 	}
 
-	K_Fold_Cross_Set get7FoldCrossSet()
+	K_Fold_Cross_Set get7FoldCrossSetQMUL()
 	{
 		K_Fold_Cross_Set kSet(7);
 
 		int numPers = (int) QMUL.size();
 		int numTilt = (int) QMUL[0].size();
-		int numPan = (int) QMUL[0].size();
+		int numPan = (int) QMUL[0][0].size();
 
 		string subject;
 		vector<string> info;

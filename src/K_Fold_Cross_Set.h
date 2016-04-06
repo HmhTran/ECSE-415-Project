@@ -10,7 +10,7 @@ using namespace std;
 class K_Fold_Cross_Set
 {
 public:
-	K_Fold_Cross_Set::K_Fold_Cross_Set(int x);
+	K_Fold_Cross_Set(int x);
 	void add(Mat m, string info);
 	void addSet(vector<Mat> vM, vector<string> vInfo);
 	void clearAll();
@@ -23,6 +23,19 @@ public:
 	void getTrainSetAt(int setIndex, vector<Mat> &outputSet, vector<string> &outputInfo);
 	void trainSetAt(int setIndex, int index, Mat &m, string &str);
 	void testSetAt(int index, Mat &m, string &str);
+
+private:
+	int k;
+	vector<int> indices;
+
+	vector<Mat> bufferSet;
+	vector<string> bufferInfo;
+
+	vector<vector<Mat>> trainSet;
+	vector<vector<string>> trainInfo;
+	vector<Mat> testSet;
+	vector<String> testInfo;
+	void randomShuffle();
 };
 
 #endif
