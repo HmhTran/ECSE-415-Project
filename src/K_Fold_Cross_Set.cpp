@@ -1,75 +1,77 @@
-#include <opencv2/opencv.hpp>
-#include <opencv2/nonfree/nonfree.hpp>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-#include <algorithm>
 #include "K_Fold_Cross_Set.h"
-
-using namespace cv;
-using namespace std;
 
 K_Fold_Cross_Set::K_Fold_Cross_Set(int x)
 {
 	if (x < 2) 
 	{
 		cout << "k-fold cross set must have at least 2 subsets" << endl;
+		k = 0;
 		return;
 	}
 
 	k = x;
 }
 
-void K_Fold_Cross_Set::add(Mat m, string info)
+bool K_Fold_Cross_Set::add(Mat m, string info)
 {
 	bufferSet.push_back(m);
 	bufferInfo.push_back(info);
+
+	return true;
 }
 
-void K_Fold_Cross_Set::addSet(vector<Mat> vM, vector<string> vInfo)
+bool K_Fold_Cross_Set::addSet(vector<Mat> vM, vector<string> vInfo)
 {
 	if(vM.size() != vInfo.size())
 	{
 		cout << "Sample Size and Info Size must be equal" << endl;
-		return;
+		return false;
 	}
 
 	bufferSet.insert(bufferSet.end(), vM.begin(), vM.end());
 	bufferInfo.insert(bufferInfo.end(), vInfo.begin(), vInfo.end());
+
+	return true;
 }
 
-void K_Fold_Cross_Set::clearAll()
+bool K_Fold_Cross_Set::clearAll()
 {
 	clearBuffer();
 	clearSet();
+
+	return true;
 }
 
-void K_Fold_Cross_Set::clearBuffer()
+bool K_Fold_Cross_Set::clearBuffer()
 {
 	bufferSet.clear();
 	bufferInfo.clear();
+
+	return true;
 }
 
-void K_Fold_Cross_Set::clearSet()
+bool K_Fold_Cross_Set::clearSet()
 {
 	trainSet.clear();
 	trainInfo.clear();
 	testSet.clear();
 	testInfo.clear();
+
+	return true;
 }
 
-void K_Fold_Cross_Set::create()
+bool K_Fold_Cross_Set::create()
 {
 	int size = (int) bufferSet.size();
 	if (size < k) {
 		cout << k << "-fold cross set must have at least " << k << " elements" << endl;
-		return;
+		return false;
 	}
 	if (size%k != 0)
 	{
 		cout << k << "-fold cross set must have elements divisble by " << k << endl;
 		cout << "Add " << k - (size%k) << " elements to the set" << endl;
+		return false;
 	}
 
 	clearSet();
@@ -109,6 +111,8 @@ void K_Fold_Cross_Set::create()
 
 	clearBuffer();
 	indices.clear();
+
+	return true;
 }
 
 void K_Fold_Cross_Set::getAllSet(vector<vector<Mat>> &outputTrainSet, vector<vector<string>> &outputTrainInfo, vector<Mat> &outputTestSet, vector<string> &outputTestInfo)

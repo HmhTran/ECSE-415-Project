@@ -3,6 +3,8 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
+#include <opencv2/nonfree/nonfree.hpp>
+#include <algorithm>
 
 using namespace cv;
 using namespace std;
@@ -11,12 +13,12 @@ class K_Fold_Cross_Set
 {
 public:
 	K_Fold_Cross_Set(int x);
-	void add(Mat m, string info);
-	void addSet(vector<Mat> vM, vector<string> vInfo);
-	void clearAll();
-	void clearBuffer();
-	void clearSet();
-	void create();
+	bool add(Mat m, string info);
+	bool addSet(vector<Mat> vM, vector<string> vInfo);
+	bool clearAll();
+	bool clearBuffer();
+	bool clearSet();
+	bool create();
 	void getAllSet(vector<vector<Mat>> &outputTrainSet, vector<vector<string>> &outputTrainInfo, vector<Mat> &outputTestSet, vector<string> &outputTestInfo);
 	void getTrainSet(vector<vector<Mat>> &outputSet, vector<vector<string>> &outputInfo);
 	void getTestSet(vector<Mat> &outputSet, vector<string> &outputInfo);
