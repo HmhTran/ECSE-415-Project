@@ -15,12 +15,12 @@ Face_Dataset::Face_Dataset(string pathQMUL, string pathPose)
 	cout << "\t\tDone!" << endl;
 
 	// Load Pose Dataset
-	/*cout << "\tLoading Pose Dataset" << endl;
+	cout << "\tLoading Pose Dataset" << endl;
 	numPerPose = 15;
 	numSerPose = 2;
 	deltaPose = 15;
 	if(!loadPose(pathPose)) return;
-	cout << "\t\tDone!" << endl;*/
+	cout << "\t\tDone!" << endl;
 
 	successfullyLoaded = true;
 	cout << "Dataset successfully loaded: QMUL Dataset and Pose Dataset" << endl << endl;
@@ -28,7 +28,7 @@ Face_Dataset::Face_Dataset(string pathQMUL, string pathPose)
 
 bool Face_Dataset::isSuccessfullyLoaded()	{  return successfullyLoaded; }
 
-void Face_Dataset::dispImageSetQMUL(string subject)
+void Face_Dataset::dispImageSetQMUL(string subject, string filePath)
 {
 	int index = subjectToIndexQMUL(subject); 
 	if (index < 0) return;
@@ -59,9 +59,15 @@ void Face_Dataset::dispImageSetQMUL(string subject)
 	imshow(imgName, output);
 	waitKey(0);
 	destroyWindow(imgName);
+
+	if(!filePath.empty())
+	{
+		string fileName = filePath + imgName + ".png";
+		imwrite(fileName, output);
+	}
 }
 
-void Face_Dataset::dispImageSetPose(int person, int series)
+void Face_Dataset::dispImageSetPose(int person, int series, string filePath)
 {
 	if (person < 1 || person > numPerPose || 
 		series < 1 || series > numSerPose)
@@ -99,6 +105,12 @@ void Face_Dataset::dispImageSetPose(int person, int series)
 	imshow(imgName, output);
 	waitKey(0);
 	destroyWindow(imgName);
+
+	if(!filePath.empty())
+	{
+		string fileName = filePath + imgName + ".png";
+		imwrite(fileName, output);
+	}
 }
 
 void Face_Dataset::getImageQMUL(string subject, int tilt, int pan, ImageSample &output)
@@ -557,7 +569,7 @@ int Face_Dataset::subjectToIndexQMUL(string subject)
 		cout << "Images of " << subject << "'s faces not found" << endl;
 		return -1;
 	}
-	int index = distance(subjectsQMUL.begin(), iter);
+	return distance(subjectsQMUL.begin(), iter);
 }
 
 void Face_Dataset::poseToIndex(int tilt, int pan, int delta, int &indexTilt, int &indexPan)
