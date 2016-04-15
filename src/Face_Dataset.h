@@ -19,8 +19,8 @@ public:
 	Face_Dataset(string pathQMUL, string pathPose);
 	bool isSuccessfullyLoaded();
 
-	void dispImageSetQMUL(string subject);
-	void dispImageSetPose(int person, int series);
+	void dispImageSetQMUL(string subject, string filePath);
+	void dispImageSetPose(int person, int series, string filePath);
 
 	void getImageQMUL(string subject, int tilt, int pan, ImageSample &output);
 	void getImageSubjectQMUL(string subject, vector<ImageSample> &output);
@@ -56,6 +56,7 @@ public:
 	void printPanPose();
 
 	K_Fold_Cross_Set get7FoldCrossSetQMUL();
+	K_Fold_Cross_Set get7FoldCrossSetQMULx();
 
 private:
 	bool successfullyLoaded;

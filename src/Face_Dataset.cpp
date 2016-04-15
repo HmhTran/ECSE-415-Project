@@ -15,12 +15,12 @@ Face_Dataset::Face_Dataset(string pathQMUL, string pathPose)
 	cout << "\t\tDone!" << endl;
 
 	// Load Pose Dataset
-	cout << "\tLoading Pose Dataset" << endl;
+	/*cout << "\tLoading Pose Dataset" << endl;
 	numPerPose = 15;
 	numSerPose = 2;
 	deltaPose = 15;
 	if(!loadPose(pathPose)) return;
-	cout << "\t\tDone!" << endl;
+	cout << "\t\tDone!" << endl;*/
 
 	successfullyLoaded = true;
 	cout << "Dataset successfully loaded: QMUL Dataset and Pose Dataset" << endl << endl;
@@ -287,6 +287,7 @@ void Face_Dataset::getPersonPose(vector<string> &person)
 		person.push_back(indexToPersonPose(i));
 	}
 }
+
 void Face_Dataset::getSeriesPose(vector<int> &ser)
 {
 	ser = vector<int>(numSerPose);
@@ -379,6 +380,46 @@ K_Fold_Cross_Set Face_Dataset::get7FoldCrossSetQMUL()
 			cout << "Unable to add images from QMUL to 7-fold cross set" << endl;
 			return NULL;
 		}
+
+		if (!ksetTemp.create())
+		{
+			cout << "Unable to create 7-fold cross set for "  << subjectsQMUL[per] << " for QMUL" << endl;
+			return NULL;
+		}
+		kset.addFoldSet(ksetTemp);
+
+	}
+
+	return kset;
+}
+
+K_Fold_Cross_Set Face_Dataset::get7FoldCrossSetQMULx()
+{
+	int tiltSet[] = {-30, -30, -20, 0, 20, 30, 30};
+	int panSet[] = {-90, -80, -90, 0, 90, 80, 90};
+	int sizePose = 7;
+
+	K_Fold_Cross_Set kset(7);
+	K_Fold_Cross_Set ksetTemp(7);
+
+	vector<ImageSample> sampleSet;
+	ImageSample sample;
+	int numPer = (int) subjectsQMUL.size();
+
+	for (int per = 0; per < numPer; per++)
+	{
+		for (int i = 0; i < sizePose; i++)
+		{
+			getImageQMUL(subjectsQMUL[per], tiltSet[i], panSet[i], sample);
+			sampleSet.push_back(sample);
+		}
+
+		if(!ksetTemp.addSet(sampleSet))
+		{
+			cout << "Unable to add images from QMUL to 7-fold cross set" << endl;
+			return NULL;
+		}
+		sampleSet.clear();
 
 		if (!ksetTemp.create())
 		{
@@ -574,10 +615,10 @@ int Face_Dataset::subjectToIndexQMUL(string subject)
 
 void Face_Dataset::poseToIndex(int tilt, int pan, int delta, int &indexTilt, int &indexPan)
 {
-	if (tilt < -maxTilt || tilt > maxTilt || tilt % deltaPose != 0 || 
-		pan < -maxPan || pan > maxPan || pan % deltaPose != 0)
+	if (tilt < -maxTilt || tilt > maxTilt || tilt % delta != 0 || 
+		pan < -maxPan || pan > maxPan || pan % delta != 0)
 	{
-		cout << "Images of faces with tilt angle of " << tilt << " degrees and pan angle of " << " degrees not found" << endl;
+		cout << "Images of faces with tilt angle of " << tilt << " degrees and pan angle of " << pan << " degrees not found" << endl;
 		return;
 	}
 
