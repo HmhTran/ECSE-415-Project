@@ -3,6 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/nonfree/nonfree.hpp>
+#include "Helper_Class.h"
 
 using namespace cv;
 using namespace std;
@@ -11,47 +12,33 @@ class Eigenfaces
 {
 public:
 	Eigenfaces();
-	void eigenfacesTestSetup(Mat pEeigenspace, vector<Mat> pEigenTrainSet, vector<string> pTrainSet);
-	bool addTrainSet(vector<Mat> trainSet, vector<string> labels);
+	void eigenfacesTestSetup(Mat pEeigenspace, vector<ImageSample> pTrainSet);
+	bool addTrainSet(vector<ImageSample> trainSet);
 	bool clearTrainSet();
-	bool train(vector<Mat> trainSet, vector<string> labels);
+	bool train(vector<ImageSample> trainSet);
 	bool train();
 	bool setK(int x);
-	void getFacesTrain(vector<Mat> &output);
-	void getEigenfacesTrain(vector<Mat> &output);
+	void getFacesTrain(vector<ImageSample> &output);
+	void getEigenfacesTrain(vector<ImageSample> &output);
 	void reconstructDemo(Mat image, Mat &output);
-	void recognition(Mat image, string &answer, Mat &match);
+	void recognition(ImageSample sample, string &answer, ImageSample &match);
 	void displayEigenspace();
 	bool fitNormalDistrib();
-	void recognitionProb(Mat image, string &answer);
-	void recognitionPose(Mat image, int &errorMin);
+	void recognitionProb(ImageSample query, string &answer);
+	void recognitionPose(ImageSample query, double &errorMin);
 
 private:
 	int k;
 	Mat eigenspace;
 	Mat meanImage;
 
-	typedef struct
-	{
-		Mat img;
-		string name;
-	}Sample;
-	vector<Sample> eigenTrainSet;
-
-	typedef struct
-	{
-		string name;
-		Mat mean;
-		Mat covar;
-	}NormDistrib;
+	vector<ImageSample> eigenTrainSet;
 	vector<NormDistrib> eigenNormDistrib;
 
 	void computeEigenspace();
 	void vectorize(Mat image, Mat &output, bool x);
 	void project(Mat image, Mat &output);
 	void reconstruct(Mat image, Mat &output);
-	bool sampleCompare(Sample s1, Sample s2);
-	double gaussian(Mat x, Mat mean, Mat covar);
 };
 
 #endif
